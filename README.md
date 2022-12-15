@@ -1,2 +1,2 @@
 # dhge-programs
-All the programs made in Highschool
+All them programs made in Highschool
