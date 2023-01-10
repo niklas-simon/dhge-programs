@@ -12,7 +12,7 @@ int main(int argc, const char *argv[]) {
     for (int i = 1; i < argc; i++) {
         int decimal = 0;
         for (int j = 0; argv[i][j] != '\0'; j++) {
-            decimal = decimal * 16;
+            decimal *= 16;
             switch (argv[i][j]) {
                 case '0'...'9':
                     decimal += argv[i][j] - '0';
@@ -28,7 +28,7 @@ int main(int argc, const char *argv[]) {
                     goto next_number;
             }
         }
-        printf("%s in Hexadezimal ist %d\n", argv[i], decimal);
+        printf("%s in Hexadezimal ist %u\n", argv[i], decimal);
         next_number: ;
     }
     return 0;

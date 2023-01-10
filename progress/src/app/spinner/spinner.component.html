@@ -1,0 +1,8 @@
+<h2>{{caption}}</h2>
+<div class="spinner-container">
+    <mat-progress-spinner color="primary" [value]="progress" [diameter]="diameter"></mat-progress-spinner>
+    <div class="text-container" [style.fontSize]="textSize + 'px'">
+        <span [style.height]="textSize + 'px'" [style.lineHeight]="textSize + 'px'">{{fraction[0]}}</span>
+        <span [style.height]="textSize + 'px'" [style.lineHeight]="textSize + 'px'" class="border">{{fraction[1]}}</span>
+    </div>
+</div>
