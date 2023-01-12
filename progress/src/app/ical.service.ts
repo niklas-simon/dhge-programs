@@ -1,7 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import * as moment from 'moment';
-import { map } from 'rxjs';
+import { catchError, map, Observable } from 'rxjs';
+import { StorageService } from './storage.service';
+import { MatDialog } from '@angular/material/dialog';
+import { ErrorComponent } from './error/error.component';
 const ical = require('ical.js');
 
 export interface Event {
@@ -15,9 +18,13 @@ export interface Event {
 })
 export class IcalService {
 
-    constructor(private http: HttpClient) { }
+    constructor(private http: HttpClient, private storage: StorageService, private dialog: MatDialog) { }
 
-    get() {
+    get(): Observable<Event[]> | null {
+        const url = this.storage.get("ical-url");
+        if (url === "") {
+            return null;
+        }
         const today = [
             moment().set({
                 hour: 0,
@@ -32,7 +39,7 @@ export class IcalService {
                 millisecond: 999
             })
         ];
-        return this.http.get("https://www.dhge.de/DHGE/Studierende/ICS.ics?hash=2C0u478PWOepVk4LH5kvNw", { responseType: 'text' }).pipe(
+        return this.http.get(url, { responseType: 'text' }).pipe(
             map(text => {
                 const calendar = ical.parse(text);
                 let events = [];
@@ -56,6 +63,13 @@ export class IcalService {
                     });
                 }
                 return events as Event[];
+            }),
+            catchError((error, caught) => {
+                console.error(error, caught);
+                this.dialog.open(ErrorComponent, {
+                    data: "The Ical-Url you entered is invalid."
+                })
+                return [];
             })
         );
     }

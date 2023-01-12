@@ -1,4 +1,71 @@
 /* You can add global styles to this file, and also import other style files */
+$primary: #5fae45;
+$primary-palette: (
+    // 5fae45
+    50: lighten($primary, 50%),
+    100: lighten($primary, 40%),
+    200: lighten($primary, 30%),
+    300: lighten($primary, 20%),
+    400: lighten($primary, 10%),
+    500: $primary,
+    600: darken($primary, 10%),
+    700: darken($primary, 10%),
+    800: darken($primary, 10%),
+    900: darken($primary, 10%),
+    contrast: (
+        50: rgba(black, 0.87),
+        100: rgba(black, 0.87),
+        200: rgba(black, 0.87),
+        300: black,
+        400: black,
+        500: black,
+        600: black,
+        700: white,
+        800: white,
+        900: white
+    )
+);
+
+@use '@angular/material' as mat;
+
+@include mat.core();
+
+$my-primary: mat.define-palette($primary-palette, 500);
+$my-accent: mat.define-palette(mat.$grey-palette, 500);
+
+// The "warn" palette is optional and defaults to red if not specified.
+$my-warn: mat.define-palette(mat.$red-palette);
+
+$my-dark-theme: mat.define-dark-theme((
+    color: (
+        primary: $my-primary,
+        accent: $my-accent,
+        warn: $my-warn,
+    ),
+    typography: mat.define-typography-config(),
+    density: 0,
+));
+
+$my-light-theme: mat.define-light-theme((
+    color: (
+        primary: $my-primary,
+        accent: $my-accent,
+        warn: $my-warn,
+    ),
+    typography: mat.define-typography-config(),
+    density: 0,
+));
+
+@media (prefers-color-scheme:dark){
+    @include mat.core-theme($my-dark-theme);
+    @include mat.all-component-themes($my-dark-theme);
+}
+
+@media (prefers-color-scheme:light){
+    @include mat.core-theme($my-light-theme);
+    @include mat.all-component-themes($my-light-theme);
+}
+
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

@@ -1,7 +1,11 @@
 import { Component, OnInit } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import * as moment from 'moment';
+import { ErrorComponent } from './error/error.component';
 import { IcalService } from './ical.service';
 import { Event } from './ical.service';
+import { SettingsComponent } from './settings/settings.component';
+import { StorageService } from './storage.service';
 
 @Component({
     selector: 'app-root',
@@ -19,7 +23,7 @@ export class AppComponent implements OnInit {
     todayString = moment().format("DD.MM.YYYY");
     events: Event[] = [];
 
-    constructor(private icalService: IcalService) {}
+    constructor(private icalService: IcalService, private dialog: MatDialog, private storage: StorageService) {}
 
     setProgress() {
         const today = Number(moment().set({
@@ -33,13 +37,18 @@ export class AppComponent implements OnInit {
         const max = Number(moment(this.events[this.events.length - 1].end).format("x")) - today;
         this.whole = (now - min) / (max - min) * 100;
 
-        const minMin = Math.round(min / 60000);
-        let nowMin = Math.round(now / 60000) - minMin;
-        let maxMin = Math.round(max / 60000) - minMin;
-        for (let i = 2; i < nowMin / 2; i++) {
-            while (nowMin % i === 0 && maxMin % i === 0) {
-                nowMin /= i;
-                maxMin /= i;
+        const minMin = Math.trunc(min / 60000);
+        let nowMin = Math.trunc(now / 60000) - minMin;
+        let maxMin = Math.trunc(max / 60000) - minMin;
+        if (maxMin % nowMin === 0) {
+            maxMin /= nowMin;
+            nowMin = 1;
+        } else {
+            for (let i = 2; i < nowMin / 2; i++) {
+                while (nowMin % i === 0 && maxMin % i === 0) {
+                    nowMin /= i;
+                    maxMin /= i;
+                }
             }
         }
         this.wholeFraction = [nowMin, maxMin];
@@ -50,13 +59,18 @@ export class AppComponent implements OnInit {
             if (sMin <= now && sMax >= now) {
                 this.current = (now - sMin) / (sMax - sMin) * 100;
                 this.currentName = this.events[i].name.replace(/\/\/.*/, "").trim();
-                const minMin = Math.round(sMin / 60000);
-                let nowMin = Math.round(now / 60000) - minMin;
-                let maxMin = Math.round(sMax / 60000) - minMin;
-                for (let i = 2; i < nowMin / 2; i++) {
-                    while (nowMin % i === 0 && maxMin % i === 0) {
-                        nowMin /= i;
-                        maxMin /= i;
+                const minMin = Math.trunc(sMin / 60000);
+                let nowMin = Math.trunc(now / 60000) - minMin;
+                let maxMin = Math.trunc(sMax / 60000) - minMin;
+                if (maxMin % nowMin === 0) {
+                    maxMin /= nowMin;
+                    nowMin = 1;
+                } else {
+                    for (let i = 2; i < nowMin / 2; i++) {
+                        while (nowMin % i === 0 && maxMin % i === 0) {
+                            nowMin /= i;
+                            maxMin /= i;
+                        }
                     }
                 }
                 this.currentFraction = [nowMin, maxMin];
@@ -67,7 +81,7 @@ export class AppComponent implements OnInit {
 
     resize() {
         const w = window.innerWidth;
-        const h = window.innerHeight;
+        const h = window.innerHeight - 150;
         let max = 0;
         if (w < h) {
             if (w*2 < h) {
@@ -82,12 +96,19 @@ export class AppComponent implements OnInit {
                 max = w / 2;
             }
         }
-        this.diameter = .8 * max;
+        this.diameter = Math.round(.8 * max);
         this.textSize = this.diameter / 3;
     }
 
-    ngOnInit(): void {
-        this.icalService.get().subscribe(events => {
+    refresh() {
+        const observable = this.icalService.get()
+        if (!observable) {
+            this.dialog.open(ErrorComponent, {
+                data: "Please enter a valid ICAL-Url in Settings"
+            });
+            return;
+        }
+        observable.subscribe(events => {
             console.log(events);
             this.events = events;
             this.setProgress();
@@ -100,6 +121,16 @@ export class AppComponent implements OnInit {
             window.addEventListener("resize", () => {
                 this.resize();
             });
+        });
+    }
+
+    openSettings() {
+        this.dialog.open(SettingsComponent);
+    }
+
+    ngOnInit(): void {
+        this.storage.get$("ical-url").subscribe(() => {
+            this.refresh();
         });
     }
 }

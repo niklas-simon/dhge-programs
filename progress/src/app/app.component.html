@@ -1,2 +1,10 @@
-<app-spinner [diameter]="diameter" [textSize]="textSize" [progress]="current" [fraction]="currentFraction" [caption]="currentName"></app-spinner>
-<app-spinner [diameter]="diameter" [textSize]="textSize" [progress]="whole" [fraction]="wholeFraction" [caption]="todayString"></app-spinner>
+<mat-toolbar>
+    <h2>DHGE Progress Tracker</h2>
+    <button mat-icon-button (click)="openSettings()">
+        <mat-icon>settings</mat-icon>
+    </button>
+</mat-toolbar>
+<div class="spinner-container">
+    <app-spinner [diameter]="diameter" [textSize]="textSize" [progress]="current" [fraction]="currentFraction" [caption]="currentName"></app-spinner>
+    <app-spinner [diameter]="diameter" [textSize]="textSize" [progress]="whole" [fraction]="wholeFraction" [caption]="todayString"></app-spinner>
+</div>

@@ -1,0 +1,10 @@
+<mat-dialog-content>
+    <mat-form-field>
+        <mat-label>Ical-Url</mat-label>
+        <input matInput [(ngModel)]="url">
+    </mat-form-field>
+</mat-dialog-content>
+<mat-dialog-actions>
+    <button mat-stroked-button color="primary" (click)="save()">Save</button>
+    <button mat-stroked-button color="accent" (click)="close()">Close</button>
+</mat-dialog-actions>
