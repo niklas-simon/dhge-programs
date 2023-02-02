@@ -1,5 +1,5 @@
 #define n 4
-#define k 2
+#define k 10
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -32,8 +32,8 @@ void put_combinations(char **array, int length) {
     }
 }
 
-int count_unique(char *number) {
-    int count = 0;
+int count_unique(const char *number) {
+    int count = 1;
     for (int i = 1; i < n; i++) {
         for (int j = 0; j < i; j++) {
             if (number[i] == number[j]) {
@@ -44,7 +44,9 @@ int count_unique(char *number) {
         // no similar digits
         count++;
         end_of_count_unique_for:
+        continue;
     }
+    return count;
 }
 
 char *get_most_different(char **array, int length) {
@@ -53,6 +55,7 @@ char *get_most_different(char **array, int length) {
     char *max = NULL;
     for (int i = 0; i < length; i++) {
         char *number = array[i];
+        if (!*number) continue;
         int count = count_unique(number);
         if (difference_target == count) {
             return number;
@@ -65,19 +68,62 @@ char *get_most_different(char **array, int length) {
     return max;
 }
 
-void solve(char **array, int length) {
-    char *most_different = get_most_different(array, length);
+void filter(char **array, int length, char *guess, int right_placed, int in_number) {
+    for (int i = 0; i < length; i++) {
+        char *number = array[i];
+        if (!*number) continue;
 
-    // guess
-    printf("I guess %s\n", most_different);
-    printf("How many digits are in the right place? ");
-    int right_placed = 0;
-    scanf("%d", &right_placed);
-    printf("How many of the others are in your number? ");
-    int in_number = 0;
-    scanf("%d", &in_number);
+        // filter out with right_placed
+        int right_placed2 = 0;
+        for (int j = 0; j < n; j++) {
+            if (number[j] == guess[j]) {
+                right_placed2++;
+            }
+        }
+        if (right_placed2 != right_placed) {
+            number[0] = '\0';
+            continue;
+        }
 
-    // to be continued...
+        // filter out with in_number
+        int in_number2 = 0;
+        for (int j = 0; j < n; j++) {
+            for (int l = 0; l < n; l++) {
+                if (guess[j] == number[l]) {
+                    in_number2++;
+                    break;
+                }
+            }
+        }
+        if (in_number2 != in_number + right_placed) number[0] = '\0';
+    }
+}
+
+bool anything_there(char **array, int length) {
+    for (int i = 0; i < length; i++) {
+        if (*(array[i])) return true;
+    }
+}
+
+char *solve(char **array, int length) {
+    for (;;) {
+        char *most_different = get_most_different(array, length);
+        char guess[n + 1];
+        strcpy(guess, most_different);
+
+        printf("I guess %s\n", guess);
+        printf("How many digits are in the right place? ");
+        int right_placed = 0;
+        scanf("%d", &right_placed);
+        printf("How many of the others are in your number? ");
+        int in_number = 0;
+        scanf("%d", &in_number);
+
+        if (right_placed == n) return most_different;
+
+        filter(array, length, guess, right_placed, in_number);
+        if (!anything_there(array, length)) return NULL;
+    }
 }
 
 int main() {
@@ -98,5 +144,10 @@ int main() {
 
     put_combinations(pointer, length);
 
-    solve(pointer, length);
+    char *result = solve(pointer, length);
+    if (result) {
+        printf("your number is %s", result);
+    } else {
+        printf("I could not guess your number. Does it even exist?");
+    }
 }
