@@ -6,9 +6,9 @@
 #define _SDLINTERF_H
 
 // Breite des Grafik-Fensters (in Pixeln)
-#define SDL_X_SIZE 800
+#define SDL_X_SIZE 2880
 // Höhe des Grafik-Fensters (in Pixeln)
-#define SDL_Y_SIZE 600
+#define SDL_Y_SIZE 1920
 
 // Ändert die Berechnung des Farbkreises für sdlDrawCyclicPoint:
 // Ohne NEW_COLOR_WHEEL rotiert der Farbkreis zwischen rot, grün und blau
@@ -146,3 +146,5 @@ extern void sdlMilliSleep(int ms);
 #endif
 
 #endif
+
+extern void sdlSetFullscreen();

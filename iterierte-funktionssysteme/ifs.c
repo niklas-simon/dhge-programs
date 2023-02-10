@@ -1,44 +1,112 @@
 #include "sdlinterf.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 
 typedef struct {
     double x;
     double y;
-} Point;
+    int r;
+    int g;
+    int b;
+} punkt;
 
 typedef struct {
-    double value;
-    double min;
-    double max;
-    double step;
-} Coefficient;
+    double wert;
+    double min_wert;
+    double max_wert;
+    double schritt;
+} koeff;
 
 typedef struct {
-    int perc_red;
-    int perc_green;
-    int perc_blue;
-    int add_red;
-    int add_green;
-    int add_blue;
-} ColorInfo;
+    int proz_rot;
+    int proz_gruen;
+    int proz_blau;
+    int dazu_rot;
+    int dazu_gruen;
+    int dazu_blau;
+} farbinfo;
+
+#include "spirale-2.h"
+
+punkt array[ANZAHL];
+
+int new_color(int old_color, int old_weight, int new_weight) {
+    int color = (old_color * old_weight) / 100 + new_weight;
+    color = color < 0 ? 0 : color > 255 ? 255 : color;
+    return color;
+}
 
 int main() {
-    sdlInit();       // mach das Grafik-Fenster auf
-    sdlSetBlack();   // mach alle Pixel schwarz
+    sdlInit();
+    sdlSetFullscreen();
+    srand(time(NULL));
 
-    int x = 0;
-    int y = 0;
-    for (int i = 0; i < SDL_X_SIZE; i++) {
-        for (int j = 0; j < SDL_Y_SIZE; j++) {
-            int old_x = x;
-            int old_y = y;
-            x = c0 * old_x + c1 * old_y + c2;
-            y = c3 * old_x + c4 * old_y + c5;
+    for (;;) {
+        int t = time(NULL);
+        for (int i = 0; i < GL_ANZ; i++) {
+            for (int j = 0; j < 6; j++) {
+                c[i][j].wert += c[i][j].schritt;
+                if (c[i][j].wert < c[i][j].min_wert || c[i][j].wert > c[i][j].max_wert) {
+                    c[i][j].schritt *= -1;
+                }
+            }
         }
+
+        sdlSetBlack();
+        double 
+            x_min =  1e300, 
+            x_max = -1e300, 
+            y_min =  1e300, 
+            y_max = -1e300;
+
+        array[0] = (punkt){0, 0, ROT, GRUEN, BLAU};
+
+        for (int i = 1; i < ANZAHL; i++) {
+            int r = rand() % 100;
+            int n = 0;
+            for (; n < sizeof(prozent); n++) {
+                if (prozent[n] > r) break;
+            }
+
+            array[i] = (punkt) {
+                c[n][0].wert * array[i - 1].x + c[n][1].wert * array[i - 1].y + c[n][2].wert,
+                c[n][3].wert * array[i - 1].x + c[n][4].wert * array[i - 1].y + c[n][5].wert,
+                new_color(array[i - 1].r, farbe[n].proz_rot, farbe[n].dazu_rot),
+                new_color(array[i - 1].g, farbe[n].proz_gruen, farbe[n].dazu_gruen),
+                new_color(array[i - 1].b, farbe[n].proz_blau, farbe[n].dazu_blau)
+            };
+
+            if (i >= ERSTER) {
+                if (array[i].x < x_min) {
+                    x_min = array[i].x;
+                }
+                if (array[i].x > x_max) {
+                    x_max = array[i].x;
+                }
+                if (array[i].y < y_min) {
+                    y_min = array[i].y;
+                }
+                if (array[i].y > y_max) {
+                    y_max = array[i].y;
+                }
+            }
+        }
+
+        for (int i = ERSTER; i < ANZAHL; i++) {
+            double x = array[i].x;
+            double y = array[i].y;
+            sdlDrawPoint(
+                ((x - x_min) / (x_max - x_min)) * (SDL_X_SIZE - 1),
+                (1 - (y - y_min) / (y_max - y_min)) * (SDL_Y_SIZE - 1),
+                array[i].r, array[i].g, array[i].b
+            );
+        }
+        sdlUpdate();
+        sdlMilliSleep(10 - (time(NULL) - t));
     }
 
-    char input;
-    scanf("%c");
+    printf("press the any key to continue...\n");
+    getc(stdin);
     sdlExit();
 }

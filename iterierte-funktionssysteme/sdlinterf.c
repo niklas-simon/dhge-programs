@@ -464,3 +464,7 @@ void sdlMilliSleep(int ms)
   sdlQuitOnEvent();
   SDL_Delay(ms);
 }
+
+void sdlSetFullscreen() {
+  SDL_SetWindowFullscreen(myWindow, SDL_WINDOW_FULLSCREEN);
+}
