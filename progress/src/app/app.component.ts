@@ -22,6 +22,7 @@ export class AppComponent implements OnInit {
     currentName = "";
     todayString = moment().format("DD.MM.YYYY");
     events: Event[] = [];
+    outOfBounds = true;
 
     constructor(private icalService: IcalService, private dialog: MatDialog, private storage: StorageService) {}
 
@@ -36,6 +37,8 @@ export class AppComponent implements OnInit {
         const min = Number(moment(this.events[0].begin).format("x")) - today;
         const max = Number(moment(this.events[this.events.length - 1].end).format("x")) - today;
         this.whole = (now - min) / (max - min) * 100;
+
+        this.outOfBounds = this.whole < 0 || this.whole > 100;
 
         const minMin = Math.trunc(min / 60000);
         let nowMin = Math.trunc(now / 60000) - minMin;
@@ -101,7 +104,19 @@ export class AppComponent implements OnInit {
     }
 
     refresh() {
-        const observable = this.icalService.get()
+        const begin = moment().set({
+            hour: 0,
+            minute: 0,
+            second: 0,
+            millisecond: 0
+        });
+        const end = moment().set({
+            hour: 23,
+            minute: 59,
+            second: 59,
+            millisecond: 999
+        });
+        const observable = this.icalService.get(begin, end);
         if (!observable) {
             this.dialog.open(ErrorComponent, {
                 data: "Please enter a valid ICAL-Url in Settings"

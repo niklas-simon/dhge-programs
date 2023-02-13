@@ -55,6 +55,8 @@ int main(int argc, char* argv[]) {
     FILE *output = fopen("out.txt", "w");
 
     char c = fgetc(input);
+    int row = 1;
+    int col = 1;
     int pointer = 1;
     while (c != EOF) {
         switch (c) {
@@ -68,33 +70,52 @@ int main(int argc, char* argv[]) {
                 pointer++;
                 break;
             case '[':
-            case ']':
+                printf("Found opening bracket at char %i:%i\n", row, col);
+                buffer[pointer] = conversion[c];
+                pointer++;
+                // will add address when matching ] found
+                buffer[pointer] = 0;
+                pointer++;
+                break;
+            case ']': {
+                printf("Now at closing bracket at char %i:%i\n", row, col);
                 buffer[pointer] = conversion[c];
                 pointer++;
                 // pointer at addr of ]
-                if (c == ']') {
-                    int last_open = -1;
-                    for (int i = pointer - 1; i >= 0; i--) {
-                        if (buffer[i] == conversion['[']) {
+                int last_open = -1;
+                int closing_count = 0;
+                for (int i = pointer - 2; i >= 0; i--) {
+                    if (buffer[i] == conversion[']']) {
+                        closing_count++;
+                        printf("Found closing bracket, count is now %i\n", closing_count);
+                    } else if (buffer[i] == conversion['[']) {
+                        if (closing_count) {
+                            closing_count--;
+                            printf("Found opening bracket to match last closing, count is now %i\n", closing_count);
+                        } else {
+                            printf("Found opening bracket to match\n");
                             last_open = i + 1;
                             // last_open at addr of [
                             break;
                         }
                     }
-                    if (last_open == -1) {
-                        return 0;
-                    }
-                    // set addr of ] to after addr of [
-                    buffer[pointer] = last_open + 1;
-                    pointer++;
-                    // set addr of [ to after addr of ]
-                    buffer[last_open] = pointer;
-                } else {
-                    buffer[pointer] = 0;
-                    pointer++;
                 }
+                if (last_open == -1) {
+                    printf("Error: No matching [ for ] at char %i:%i found\n", row, col);
+                    return 0;
+                }
+                // set addr of ] to after addr of [
+                buffer[pointer] = last_open + 1;
+                pointer++;
+                // set addr of [ to after addr of ]
+                buffer[last_open] = pointer;
                 break;
+            }
             default:
+                if (c == '\n') {
+                    row++;
+                    col = 1;
+                }
                 break;
         }
         c = fgetc(input);

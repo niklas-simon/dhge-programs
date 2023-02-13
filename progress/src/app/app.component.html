@@ -4,7 +4,15 @@
         <mat-icon>settings</mat-icon>
     </button>
 </mat-toolbar>
-<div class="spinner-container">
+<div class="spinner-container" *ngIf="!outOfBounds">
     <app-spinner [diameter]="diameter" [textSize]="textSize" [progress]="current" [fraction]="currentFraction" [caption]="currentName"></app-spinner>
     <app-spinner [diameter]="diameter" [textSize]="textSize" [progress]="whole" [fraction]="wholeFraction" [caption]="todayString"></app-spinner>
+</div>
+<div class="summary-container" *ngIf="outOfBounds">
+    <h2>Anstehend:</h2>
+    <ul>
+        <li *ngFor="let event in events">
+            {{event.begin | date:'HH:mm'}} - {{event.end | date:'HH:mm'}} {{event.name}}
+        </li>
+    </ul>
 </div>

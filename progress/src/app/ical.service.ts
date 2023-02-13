@@ -20,25 +20,11 @@ export class IcalService {
 
     constructor(private http: HttpClient, private storage: StorageService, private dialog: MatDialog) { }
 
-    get(): Observable<Event[]> | null {
+    get(begin: moment.Moment, end: moment.Moment): Observable<Event[]> | null {
         const url = this.storage.get("ical-url");
         if (url === "") {
             return null;
         }
-        const today = [
-            moment().set({
-                hour: 0,
-                minute: 0,
-                second: 0,
-                millisecond: 0
-            }),
-            moment().set({
-                hour: 23,
-                minute: 59,
-                second: 59,
-                millisecond: 999
-            })
-        ];
         return this.http.get(url, { responseType: 'text' }).pipe(
             map(text => {
                 const calendar = ical.parse(text);
@@ -53,7 +39,7 @@ export class IcalService {
                 }
                 events = events.filter(event => {
                     const begin = moment(event.begin);
-                    return begin.isBetween(today[0], today[1]);
+                    return begin.isBetween(begin, end);
                 });
                 for (let i = 1; i < events.length; i += 2) {
                     events.splice(i, 0, {
