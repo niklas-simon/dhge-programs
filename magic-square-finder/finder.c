@@ -1,97 +1,102 @@
-#include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
+#include <stdio.h>
+#include <errno.h>
+#include <string.h>
 
 void get_out() {
-    printf("usage: finder.exe length");
+    printf("usage: finder.out length");
     exit(0);
 }
 
-void print(int length, int square[]) {
-    printf("[");
+void print(int **square, int length) {
     for (int i = 0; i < length; i++) {
-        printf(" [");
         for (int j = 0; j < length; j++) {
-            printf(" %2i", square[i * length + j]);
+            if (j) {
+                printf(" ");
+            }
+            printf("%2i", square[i][j]);
         }
-        printf(" ]");
+        printf("\n");
     }
-    printf(" ]\n");
 }
 
-bool check(int length, int square[]) {
-    // rows & cols
-    int master = length * (length * length + 1) / 2;
+void check(int **square, int length) {
+    int realsum = length * (length * length + 1) / 2;
+    printf("All sums must be %i...\n", realsum);
+
+    // check rows and cols
     for (int i = 0; i < length; i++) {
-        int sum_row = 0;
-        bool has_empty_row = false;
-        int sum_col = 0;
-        bool has_empty_col = false;
+        int rowsum = 0;
+        int colsum = 0;
         for (int j = 0; j < length; j++) {
-            sum_row += square[i * length + j];
-            if (!square[i * length + j]) {
-                has_empty_row = true;
-            }
-            sum_col += square[j * length + i];
-            if (!square[j * length + i]) {
-                has_empty_col = true;
-            }
+            rowsum += square[i][j];
+            colsum += square[j][i];
         }
-        printf("%2i %2i\n", sum_row, sum_col);
-        if ((has_empty_row && sum_row > master) || (!has_empty_row && sum_row != master)) {
-            return false;
+        if (rowsum != realsum) {
+            printf("... but the sum of row %i is %i.\n", i, rowsum);
+            return;
         }
-        if ((has_empty_col && sum_col > master) || (!has_empty_col && sum_col != master)) {
-            return false;
+        if (colsum != realsum) {
+            printf("... but the sum of column %i is %i.\n", i, colsum);
+            return;
         }
     }
 
-    // diagonals
-    bool has_empty_1 = false;
-    bool has_empty_2 = false;
-    int sum_1 = 0;
-    int sum_2 = 0;
+    // check diags
+    int mainsum = 0;
+    int secsum = 0;
     for (int i = 0; i < length; i++) {
-        sum_1 += square[i * length + i];
-        if (!square[i * length + i]) {
-            has_empty_1 = true;
-        }
-        sum_2 += square[(length - i - 1) * length + i];
-        if (!square[i * length + i]) {
-            has_empty_2 = true;
-        }
+        mainsum += square[i][i];
+        secsum += square[length - i - 1][i];
     }
-    printf("%2i %2i\n", sum_1, sum_2);
-    if ((has_empty_1 && sum_1 > master) || (!has_empty_1 && sum_1 != master)) {
-        return false;
-    }
-    if ((has_empty_2 && sum_2 > master) || (!has_empty_2 && sum_2 != master)) {
-        return false;
-    }
-    return true;
-}
-
-void find(int length, int square[], int index) {
-    if (index == length) {
-        print(length, square);
+    if (mainsum != realsum) {
+        printf("... but the sum of the main diagonal is %i.\n", mainsum);
         return;
     }
-    for (int i = 1; i <= length * length; i++) {
-        square[index] = i;
-        print(length, square);
-        if (check(length, square)) {
-            find(length, square, index + 1);
-        }
+    if (secsum != realsum) {
+        printf("... but the sum of the secondary diagonal is %i.\n", secsum);
+        return;
     }
-    square[index] = 0;
+
+    printf("... and they oh so definitely are!\n");
 }
 
-int main(int argc, char* argv[]) {
-    if (argc != 2) get_out();
-    int length = atoi(argv[1]);
-    int square[length * length];
-    for (int i = 0; i < length * length; i++) {
-        square[i] = 0;
+void generate(int **square, int length) {
+    int x = 0; int y = 0;
+    for (int i = 1; i <= length * length; i++) {
+        square[x][y] = i;
+        if (i % length) {
+            x = (x + length - 1) % length;
+            y = (y + 2) % length;
+        } else {
+            x = (x + length - 2) % length;
+        }
     }
-    find(length, square, 0);
+
+    print(square, length);
+    check(square, length);
+}
+
+int main(int argc, char **argv) {
+    if (argc != 2) {
+        get_out();
+    }
+    int length = atoi(argv[1]);
+    if (length < 0 || length % 2 == 0 || length % 3 == 0) {
+        get_out();
+    }
+
+    int **square = (int **)malloc(length * sizeof(int *));
+    for (int i = 0; i < length; i++) {
+        square[i] = (int *)malloc(length * sizeof(int));
+        if (!square[i]) {
+            fprintf(stderr, "Error while allocating memory: %s", strerror(errno));
+            exit(errno);
+        }
+        for (int j = 0; j < length; j++) {
+            square[i][j] = 0;
+        }
+    }
+
+    generate(square, length);
 }
