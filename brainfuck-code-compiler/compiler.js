@@ -12,6 +12,13 @@ let pointer = 0;
 const variables = [];
 const loopvars = [];
 
+const loopmodes = {
+    LOOP: 0,
+    IF: 1,
+    "loop": 0,
+    "if": 1
+}
+
 const setPointerToVariable = (name) => {
     let output = "";
     const existing = variables.findIndex(variable => variable === name);
@@ -59,8 +66,12 @@ const startLoop = (match) => {
     let output = "";
     const name = match.groups.name;
     const next = match.groups.next;
+    const mode = match.groups.mode;
 
-    loopvars.push(name);
+    loopvars.push({
+        name: name,
+        mode: loopmodes[mode]
+    });
     output += setPointerToVariable(name);
 
     output += "[\n";
@@ -72,9 +83,14 @@ const startLoop = (match) => {
 const endLoop = (match) => {
     let output = "";
     const next = match.groups.next;
-    const name = loopvars[loopvars.length - 1];
+    const loopvar = loopvars[loopvars.length - 1];
 
-    output += setPointerToVariable(name);
+    output += setPointerToVariable(loopvar.name);
+
+    if (loopvar.mode === loopmodes.IF) {
+        output += "[-]";
+    }
+
     loopvars.splice(loopvars.length - 1, 1);
 
     output += "]\n";
@@ -112,7 +128,7 @@ const compileLine = (line) => {
     if (matchAssign) {
         newLine += assignVariable(matchAssign);
     }
-    const matchLoopStart = line.match(/^loop\(\$(?<name>\w+)\)\{(?<next>.+)$/);
+    const matchLoopStart = line.match(/^(?<mode>loop|if)\(\$(?<name>\w+)\)\{(?<next>.+)$/);
     if (matchLoopStart) {
         newLine += startLoop(matchLoopStart);
     }
