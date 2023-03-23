@@ -1,6 +1,6 @@
 import openai
 
-openai.api_key = "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"
+openai.api_key = "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"
 
 model_engine = "text-davinci-003"
 
@@ -17,3 +17,7 @@ while True:
   )
 
   print(completion['choices'][0]['text'])
+
+'''
+google-oauthlib-tool --scope https://www.googleapis.com/auth/assistant-sdk-prototype --scope https://www.googleapis.com/auth/gcm --save --headless --client-secrets client_secret_0.json
+'''
