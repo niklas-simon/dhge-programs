@@ -178,6 +178,9 @@ DWORD WINAPI thread(LPVOID args)
 #endif
 {
         int index = *((int *)(args));
+        if (index / length_2 == index % length_2) {
+                return;
+        }
 
         int **square = (int **)malloc(length * sizeof(int *));
         for (int i = 0; i < length; i++) {
@@ -196,7 +199,8 @@ DWORD WINAPI thread(LPVOID args)
                 available[i] = true;
         }
 
-        available[index] = false;
+        available[index / length_2] = false;
+        available[index % length_2] = false;
         square[0][0] = (index / length_2) + 1;
         square[1][0] = (index % length_2) + 1;
 
@@ -226,6 +230,11 @@ int main(int argc, char **argv)
 
         struct timeval stop, start;
         gettimeofday(&start, NULL);
+
+        /*indices[1] = 1;
+        pthread_create(&(threads[1]), NULL, thread, &(indices[1]));
+        pthread_join(threads[1], NULL);
+        return 0;*/
 
         for (int i = 0; i < length_4; i++) {
                 indices[i] = i;
