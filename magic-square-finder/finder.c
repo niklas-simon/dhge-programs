@@ -28,6 +28,7 @@ void get_out()
 
 void print(int **square)
 {
+        printf("#%d:\n", found);
         char string[128];
         char *ptr = string;
         for (int i = 0; i < length; i++) {
@@ -155,8 +156,8 @@ void generate(int **square, bool *available, int x, int y)
                 square[x][y] = i + 1;
                 switch (check(square)) {
                 case IS:
-                        print(square);
                         found++;
+                        print(square);
                         break;
                 case COULD_BE:
                         if (!proceed) {
